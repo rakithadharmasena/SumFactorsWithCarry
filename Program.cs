@@ -7,23 +7,30 @@ namespace SumFactorsWithCarry
     {
         static void Main(string[] args)
         {
-            int number = int.Parse(args[0]);
-            var pairs = GetPairs(number);
+            //what base the number is on
+            int _base = int.Parse(args[1]);
+            int number = ConvertToDecimal(args[0], _base);
+            var pairs = GetPairs(number,_base);
             foreach (var item in pairs)
             {
                 Console.WriteLine(string.Format("{0},{1}", item.Item1, item.Item2));
             }
         }
 
-        private static List<Tuple<int, int>> GetPairs(int number)
+        //find number pairs
+        private static List<Tuple<string, string>> GetPairs(int number,int _base)
         {
-            List<Tuple<int, int>> pairs = new List<Tuple<int, int>>();
+            List<Tuple<string, string>> pairs = new List<Tuple<string, string>>();
 
             for (int i = 1; i <= number / 2; i++)
             {
-                if (CountCarry(i.ToString(), (number - i).ToString()) <= 0)
+                if (CountCarry(ConvertDecimalToAnyBase(i,_base),
+                    ConvertDecimalToAnyBase(number - i,_base),_base) <= 0)
                 {
-                    pairs.Add(new Tuple<int, int>(i, number - i));
+                    pairs.Add(new Tuple<string, string>(
+                        ConvertDecimalToAnyBase(i,_base), 
+                        ConvertDecimalToAnyBase( number - i,_base)
+                        ));
                 }
             }
 
@@ -38,7 +45,7 @@ namespace SumFactorsWithCarry
         /// <param name="b">second number</param>
         /// <param name="_base">BASE system used in your number. Decimal , Binary , HEX etc</param>
         /// <returns></returns>
-        private static int CountCarry(string a, string b,int _base = 10)
+        private static int CountCarry(string a, string b,int _base)
         {
             // Initialise the value of carry to 0 
             int carry = 0;
@@ -82,6 +89,32 @@ namespace SumFactorsWithCarry
             }
 
             return count;
+        }
+
+
+        private static int ConvertToDecimal(string number, int _base)
+        {
+            char[] chars = number.ToCharArray();
+            int decTotal = 0;
+            for (int i = 0; i < chars.Length; i++)
+            {
+                decTotal += (chars[chars.Length-(i+1)] - '0') * (int)(Math.Pow(_base, i));
+            }
+
+            return decTotal;
+        }
+
+        private static string ConvertDecimalToAnyBase(int number, int _base)
+        {
+            Stack<int> result = new Stack<int>();
+            do
+            {
+                result.Push((number % _base));
+                number = number / _base;
+            } while (number >= _base);
+
+            result.Push(number);
+            return string.Join("", result.ToArray());
         }
     }
 }
